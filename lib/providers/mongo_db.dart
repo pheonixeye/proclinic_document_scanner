@@ -19,6 +19,7 @@ class PxDatabase extends ChangeNotifier {
   final DbCollection visitData = mongo.collection('visitdata');
   final DbCollection allDoctors = mongo.collection('allDoctors');
   final DbCollection appOrganizer = mongo.collection('apporganizer');
+  final GridFS gridFS = GridFS(mongo);
 
   Future<void> openYaMongo() async {
     await mongo.open().catchError((e) {

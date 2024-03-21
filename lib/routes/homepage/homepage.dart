@@ -5,6 +5,7 @@ import 'package:proclinic_document_scanner/providers/mongo_db.dart';
 import 'package:proclinic_document_scanner/providers/network_settings.dart';
 import 'package:proclinic_document_scanner/routes/newtork_settings/network_settings.dart';
 import 'package:proclinic_document_scanner/routes/scan_uuid/scan_uuid.dart';
+import 'package:proclinic_document_scanner/routes/scan_visit_page/scan_visit_page.dart';
 import 'package:provider/provider.dart';
 
 class MyHomePage extends StatefulWidget {
@@ -154,16 +155,38 @@ class _MyHomePageState extends State<MyHomePage> {
           ),
           Row(
             children: [
-              ElevatedButton.icon(
-                onPressed: () async {
-                  print(await context
-                      .read<PxDatabase>()
-                      .allDoctors
-                      .find()
-                      .toList());
+              Consumer3<PxCheckUuid, PxNetworkSettings, PxDatabase>(
+                builder: (context, u, n, d, _) {
+                  return ElevatedButton.icon(
+                    onPressed: () async {
+                      if (u.state == UuidState.isCorrect &&
+                          n.ip != null &&
+                          d.state == MongoState.connected) {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const ScanVisitPage(),
+                          ),
+                        );
+                      } else {
+                        if (u.state != UuidState.isCorrect) {
+                          await EasyLoading.showError(
+                              "Missing Application Connection.");
+                        }
+                        if (n.ip == null) {
+                          await EasyLoading.showError(
+                              "Missing Network Configuration.");
+                        }
+                        if (d.state != MongoState.connected) {
+                          await EasyLoading.showError(
+                              "Missing Database Connection.");
+                        }
+                      }
+                    },
+                    icon: const Icon(Icons.camera),
+                    label: const Text('Scan Document'),
+                  );
                 },
-                icon: const Icon(Icons.abc),
-                label: const Text('Test Query'),
               ),
             ],
           ),
