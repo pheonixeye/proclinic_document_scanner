@@ -43,12 +43,15 @@ dependencies:
   mongo_dart:
   path:
   hive:
+  hive_flutter:
   permission_handler: 
   pretty_qr_code: 
   mobile_scanner: 3.5.5
   intl:
   image_picker: ^1.0.7
   flutter_easyloading:
+  path_provider:
+  after_layout: ^1.2.0
 
 dev_dependencies:
   flutter_test:

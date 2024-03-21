@@ -1,11 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 import 'package:proclinic_document_scanner/localization/app_localizations.dart';
 import 'package:proclinic_document_scanner/providers/_main.dart';
 import 'package:proclinic_document_scanner/routes/loading_screen/loading_screen.dart';
 import 'package:provider/provider.dart';
 
 void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Hive.initFlutter();
+  await Hive.openBox('network');
   runApp(const MyApp());
 }
 

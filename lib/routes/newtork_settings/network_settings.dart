@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
+import 'package:proclinic_document_scanner/providers/network_settings.dart';
+import 'package:provider/provider.dart';
 
 class NetworkSettingsPage extends StatefulWidget {
   const NetworkSettingsPage({super.key});
@@ -8,10 +11,24 @@ class NetworkSettingsPage extends StatefulWidget {
 }
 
 class _NetworkSettingsPageState extends State<NetworkSettingsPage> {
-  TextEditingController ipController = TextEditingController();
-  TextEditingController portController = TextEditingController();
+  late final TextEditingController ipController;
+  late final TextEditingController portController;
 
   final formKey = GlobalKey<FormState>();
+
+  @override
+  void initState() {
+    super.initState();
+    ipController = TextEditingController();
+    portController = TextEditingController();
+  }
+
+  @override
+  void dispose() {
+    ipController.dispose();
+    portController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -67,7 +84,18 @@ class _NetworkSettingsPageState extends State<NetworkSettingsPage> {
                 icon: const Icon(Icons.save),
                 label: const Text('Save'),
                 onPressed: () async {
-                  if (formKey.currentState!.validate()) {}
+                  if (formKey.currentState!.validate()) {
+                    await EasyLoading.show(status: "Loading...");
+                    if (context.mounted) {
+                      await context.read<PxNetworkSettings>().addDataToNetwork(
+                            ip: ipController.text,
+                            port: portController.text,
+                          );
+                    }
+                    await EasyLoading.dismiss();
+
+                    context.mounted ? Navigator.pop(context) : () {};
+                  }
                 },
               ),
             ],

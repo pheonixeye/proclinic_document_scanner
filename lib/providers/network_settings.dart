@@ -1,11 +1,15 @@
-import 'dart:core';
+import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:hive/hive.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 import 'package:proclinic_document_scanner/errors/connection_settings.dart';
 
 class PxNetworkSettings extends ChangeNotifier {
-  static Box? storage;
+  final Box storage = Hive.box('network');
+
+  PxNetworkSettings() {
+    getSettings();
+  }
 
   String? _ip;
   String? get ip => _ip;
@@ -13,28 +17,26 @@ class PxNetworkSettings extends ChangeNotifier {
   String? _port;
   String? get port => _port;
 
-  static Future<void> init() async {
-    Hive.init('assets\\network.hive');
-    storage = await Hive.openBox('network');
+  Future<void> addDataToNetwork({
+    required String ip,
+    required String port,
+  }) async {
+    await storage.put('ip', ip);
+    await storage.put('port', port);
   }
 
-  Future<void> adddatatonetwork(
-      {required String ip, required String port}) async {
-    await storage?.put('ip', ip);
-    await storage?.put('port', port);
+  Future<void> resetNetwork() async {
+    await storage.delete('ip');
+    await storage.delete('port');
   }
 
-  Future<void> resetnetwork() async {
-    await storage?.delete('ip');
-    await storage?.delete('port');
-  }
-
-  Future<ConnectionSettings> getSettings() async {
+  Future<void> getSettings() async {
     try {
-      _ip = await storage?.get('ip');
-      _port = await storage?.get('port');
+      if (await Hive.boxExists("network")) {
+        _ip = await storage.get('ip');
+        _port = await storage.get('port');
+      }
       notifyListeners();
-      return ConnectionSettings(ip: ip!, port: port!);
     } catch (e) {
       throw ConnectionSettingsException('Wrong Ip Address or Port Format.');
     }

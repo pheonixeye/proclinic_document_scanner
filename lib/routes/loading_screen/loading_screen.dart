@@ -15,6 +15,7 @@ class _LoadingScreenState extends State<LoadingScreen> {
 
   @override
   void initState() {
+    super.initState();
     timer = Timer(const Duration(seconds: 3), () {
       Navigator.pushReplacement(
         context,
@@ -23,7 +24,6 @@ class _LoadingScreenState extends State<LoadingScreen> {
         ),
       );
     });
-    super.initState();
   }
 
   @override
