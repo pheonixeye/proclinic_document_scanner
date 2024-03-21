@@ -37,6 +37,8 @@ class PxNetworkSettings extends ChangeNotifier {
         _port = await storage.get('port');
       }
       notifyListeners();
+      print(_ip);
+      print(_port);
     } catch (e) {
       throw ConnectionSettingsException('Wrong Ip Address or Port Format.');
     }

@@ -119,9 +119,10 @@ class _MyHomePageState extends State<MyHomePage> {
                               'Wrong Application Serial Number. Contact Adminstrator.');
                         case UuidState.isCorrect:
                           final db = context.read<PxDatabase>();
-                          await EasyLoading.show(status: "Connecting...");
                           try {
+                            await EasyLoading.show(status: "Connecting...");
                             await db.openYaMongo();
+                            await EasyLoading.showInfo(db.state.toString());
                           } catch (e) {
                             print(e);
                             await EasyLoading.showInfo(db.state.toString());
@@ -149,6 +150,21 @@ class _MyHomePageState extends State<MyHomePage> {
                 },
               ),
               const SizedBox(width: 30),
+            ],
+          ),
+          Row(
+            children: [
+              ElevatedButton.icon(
+                onPressed: () async {
+                  print(await context
+                      .read<PxDatabase>()
+                      .allDoctors
+                      .find()
+                      .toList());
+                },
+                icon: const Icon(Icons.abc),
+                label: const Text('Test Query'),
+              ),
             ],
           ),
         ],
