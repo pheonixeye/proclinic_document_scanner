@@ -94,7 +94,7 @@ class VisitData {
     "Lab Results": SxVD.LABSPAPERS,
     "Radiology Results": SxVD.RADSPAPERS,
     "Perscriptions": SxVD.DRUGPAPERS,
-    "Comment Documents": SxVD.COMMENTSPAPERS,
+    "Miscellaneous": SxVD.COMMENTSPAPERS,
   };
 }
 

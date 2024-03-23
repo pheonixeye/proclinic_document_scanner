@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:image_picker/image_picker.dart';
 import 'package:proclinic_document_scanner/models/visit_data/visit_data.dart';
 import 'package:proclinic_document_scanner/providers/image_handler.dart';
 import 'package:proclinic_document_scanner/providers/visit_details.dart';
+import 'package:proclinic_document_scanner/routes/visit_details_page/picked_image_page.dart';
 import 'package:provider/provider.dart';
 
 class VisitDetailsPage extends StatefulWidget {
@@ -63,16 +63,21 @@ class _VisitDetailsPageState extends State<VisitDetailsPage> {
                             Expanded(
                               child: ElevatedButton(
                                 onPressed: () async {
-                                  final handler = PxImageHandler();
-                                  //TODO: camera image a file
-                                  await handler.pickImage();
-                                  //TODO: convert file to pdf
-                                  await handler.generatePdfFile();
-                                  //TODO: add file to db
-                                  await handler.saveFileToDatabase();
-                                  //TODO: update visit details with file id in corresponding list
+                                  await context
+                                      .read<PxImageHandler>()
+                                      .pickImage()
+                                      .whenComplete(() {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) => PickedImagePage(
+                                          data: e,
+                                        ),
+                                      ),
+                                    );
+                                  });
                                 },
-                                child: Text("Scan ${e.key}"),
+                                child: Text('Add "${e.key}"'),
                               ),
                             ),
                           ],

@@ -12,7 +12,7 @@ class PxVisitDetails extends ChangeNotifier {
 
   Future<void> fetchVisitDetailsById(String id) async {
     try {
-      final result = await db.visitData
+      final result = await PxDatabase.visitData
           .findOne(where.eq("visitid", ObjectId.fromHexString(id)));
       _details = VisitData.fromJson(result);
       notifyListeners();
@@ -27,7 +27,7 @@ class PxVisitDetails extends ChangeNotifier {
   }
 
   Future<String> addFileToGrid(Stream<List<int>> input) async {
-    final result = db.gridFS.createFile(input, "test.pdf");
+    final result = PxDatabase.gridFS.createFile(input, "test.pdf");
     final file = await result.save();
     return file.toString();
   }

@@ -1,23 +1,22 @@
-import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:mongo_dart/mongo_dart.dart';
 import 'package:proclinic_document_scanner/errors/image_capture_failed.dart';
 
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:proclinic_document_scanner/errors/img_to_pdf_conversion.dart';
+import 'package:proclinic_document_scanner/errors/visit_update_failed.dart';
 import 'package:proclinic_document_scanner/providers/mongo_db.dart';
 
 class PxImageHandler extends ChangeNotifier {
   final picker = ImagePicker();
-  final db = PxDatabase();
 
   XFile? _imgFile;
   XFile? get imgFile => _imgFile;
 
-  File? _pdfFile;
-  File? get pdfFile => _pdfFile;
+  String? _fileName;
+  String? get fileName => _fileName;
 
   Future<XFile?> pickImage() async {
     try {
@@ -25,13 +24,14 @@ class PxImageHandler extends ChangeNotifier {
         preferredCameraDevice: CameraDevice.rear,
         source: ImageSource.camera,
       );
+      notifyListeners();
       return _imgFile;
     } catch (e) {
       throw ImageCaptreFailedException(e.toString());
     }
   }
 
-  Future<File?> generatePdfFile() async {
+  Future<void> generatePdfFile(String fileName) async {
     try {
       final pdf = pw.Document();
       final image = pw.MemoryImage(
@@ -51,20 +51,32 @@ class PxImageHandler extends ChangeNotifier {
         ),
         index: 0,
       );
+      _fileName = "$fileName.pdf";
 
-      final file = File('${DateTime.now()}.pdf');
-      _pdfFile = await file.writeAsBytes(await pdf.save());
-      return _pdfFile;
+      final result =
+          PxDatabase.gridFS.createFile(pdf.save().asStream(), _fileName!);
+      result.contentType = "pdf";
+      await result.save();
     } catch (e) {
       throw ImageToPdfConversionException(e.toString());
     }
   }
 
-  Future<String?> saveFileToDatabase() async {
-    final result =
-        db.gridFS.createFile(pdfFile!.openRead(), pdfFile.toString());
-    final file = await result.save();
-    print(file.toString());
-    return file.toString();
+  Future<void> updateVisitEntry(
+      ObjectId visitDetailsId, String attribute) async {
+    try {
+      final file =
+          await PxDatabase.gridFS.findOne(where.eq('filename', _fileName));
+      await PxDatabase.visitData.updateOne(
+        where.eq("visitid", visitDetailsId),
+        {
+          r'$addToSet': {
+            attribute: file!.id,
+          }
+        },
+      );
+    } catch (e) {
+      throw VisitUpdateFailedException(e.toString());
+    }
   }
 }
