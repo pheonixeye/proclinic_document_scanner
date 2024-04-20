@@ -54,6 +54,8 @@ dependencies:
   after_layout: ^1.2.0
   printing: ^5.12.0
   pdf: ^3.10.8
+  proclinic_models:
+    path: ../packages/proclinic_models
 
 dev_dependencies:
   flutter_test:

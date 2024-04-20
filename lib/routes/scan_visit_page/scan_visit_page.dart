@@ -15,14 +15,6 @@ class ScanVisitPage extends StatefulWidget {
 class _ScanVisitPageState extends State<ScanVisitPage> {
   late final MobileScannerController controller;
 
-  // final controllerInit = MobileScannerController(
-  //   detectionSpeed: DetectionSpeed.noDuplicates,
-  //   facing: CameraFacing.back,
-  //   formats: [
-  //     BarcodeFormat.qrCode,
-  //   ],
-  // );
-
   @override
   void initState() {
     controller = MobileScannerController(
@@ -66,6 +58,8 @@ class _ScanVisitPageState extends State<ScanVisitPage> {
                         child: MobileScanner(
                           controller: controller,
                           onDetect: (capture) async {
+                            final bc = capture.barcodes[0].rawValue;
+                            print(bc);
                             try {
                               await v.fetchVisitDetailsById(
                                   capture.barcodes[0].rawValue!);

@@ -9,7 +9,7 @@ class PxCheckUuid extends ChangeNotifier {
   UuidState get state => _state;
 
   bool checkUuid(String? value) {
-    if (value == UUID) {
+    if (value == UUID_RECEPTION || value == UUID_DOCTOR) {
       _uuid = value;
       _state = UuidState.isCorrect;
       notifyListeners();

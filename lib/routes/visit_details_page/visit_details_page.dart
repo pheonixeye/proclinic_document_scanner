@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:proclinic_document_scanner/models/visit_data/visit_data.dart';
 import 'package:proclinic_document_scanner/providers/image_handler.dart';
 import 'package:proclinic_document_scanner/providers/visit_details.dart';
 import 'package:proclinic_document_scanner/routes/visit_details_page/picked_image_page.dart';
+import 'package:proclinic_models/proclinic_models.dart';
 import 'package:provider/provider.dart';
 
 class VisitDetailsPage extends StatefulWidget {

@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:mongo_dart/mongo_dart.dart';
 import 'package:proclinic_document_scanner/errors/visit_not_found.dart';
-import 'package:proclinic_document_scanner/models/visit_data/visit_data.dart';
 import 'package:proclinic_document_scanner/providers/mongo_db.dart';
+import 'package:proclinic_models/proclinic_models.dart';
 
 class PxVisitDetails extends ChangeNotifier {
   VisitData? _details;
@@ -10,10 +10,10 @@ class PxVisitDetails extends ChangeNotifier {
 
   final db = PxDatabase();
 
-  Future<void> fetchVisitDetailsById(String id) async {
+  Future<void> fetchVisitDetailsById(String visitid) async {
     try {
       final result = await PxDatabase.visitData
-          .findOne(where.eq("visitid", ObjectId.fromHexString(id)));
+          .findOne(where.eq("visitid", ObjectId.fromHexString(visitid)));
       _details = VisitData.fromJson(result);
       notifyListeners();
     } catch (e) {
@@ -26,11 +26,11 @@ class PxVisitDetails extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<String> addFileToGrid(Stream<List<int>> input) async {
-    final result = PxDatabase.gridFS.createFile(input, "test.pdf");
-    final file = await result.save();
-    return file.toString();
-  }
+  // Future<String> addFileToGrid(Stream<List<int>> input) async {
+  //   final result = PxDatabase.gridFS.createFile(input, "test.pdf");
+  //   final file = await result.save();
+  //   return file.toString();
+  // }
 
   // Future<void> updateVisitDetails({
   //   required String attribute,

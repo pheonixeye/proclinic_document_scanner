@@ -36,7 +36,7 @@ class PxImageHandler extends ChangeNotifier {
       final pdf = pw.Document();
       final image = pw.MemoryImage(
         await imgFile!.readAsBytes(),
-        dpi: 200,
+        dpi: 72,
       );
 
       pdf.addPage(
@@ -45,7 +45,7 @@ class PxImageHandler extends ChangeNotifier {
           build: (pw.Context context) {
             return pw.Image(
               image,
-              dpi: 200,
+              dpi: 72,
             );
           },
         ),
