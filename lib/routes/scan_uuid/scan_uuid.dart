@@ -1,3 +1,6 @@
+import 'dart:async';
+
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
@@ -11,25 +14,73 @@ class ScanUUIDPage extends StatefulWidget {
   State<ScanUUIDPage> createState() => _ScanUUIDPageState();
 }
 
-class _ScanUUIDPageState extends State<ScanUUIDPage> {
-  late final MobileScannerController controller;
+class _ScanUUIDPageState extends State<ScanUUIDPage>
+    with WidgetsBindingObserver {
+  final MobileScannerController controller = MobileScannerController(
+    detectionSpeed: DetectionSpeed.normal,
+    facing: CameraFacing.back,
+    formats: [BarcodeFormat.qrCode],
+    detectionTimeoutMs: 1000,
+    returnImage: false,
+  );
+  Barcode? _barcode;
+  StreamSubscription<Object?>? _subscription;
 
-  @override
-  void initState() {
-    controller = MobileScannerController(
-      detectionSpeed: DetectionSpeed.noDuplicates,
-      facing: CameraFacing.back,
-      formats: [
-        BarcodeFormat.qrCode,
-      ],
-    );
-    super.initState();
+  void _handleBarcode(BarcodeCapture barcodes) {
+    if (mounted) {
+      _barcode = barcodes.barcodes.firstOrNull;
+      if (_barcode != null) {
+        try {
+          if (kDebugMode) {
+            print("QR Code Found");
+          }
+          context.read<PxCheckUuid>().checkUuid(_barcode!.rawValue);
+          EasyLoading.showSuccess("Serial Number Check Complete.");
+          Navigator.pop(context);
+        } catch (e) {
+          EasyLoading.showError("Serial Number Check Failed.");
+        }
+      }
+    }
   }
 
   @override
-  void dispose() {
-    controller.dispose();
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+
+    _subscription = controller.barcodes.listen(_handleBarcode);
+
+    unawaited(controller.start());
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    super.didChangeAppLifecycleState(state);
+
+    switch (state) {
+      case AppLifecycleState.detached:
+      case AppLifecycleState.hidden:
+      case AppLifecycleState.paused:
+        return;
+      case AppLifecycleState.resumed:
+        _subscription = controller.barcodes.listen(_handleBarcode);
+
+        unawaited(controller.start());
+      case AppLifecycleState.inactive:
+        unawaited(_subscription?.cancel());
+        _subscription = null;
+        unawaited(controller.stop());
+    }
+  }
+
+  @override
+  Future<void> dispose() async {
+    WidgetsBinding.instance.removeObserver(this);
+    unawaited(_subscription?.cancel());
+    _subscription = null;
     super.dispose();
+    controller.dispose();
   }
 
   @override
@@ -52,17 +103,6 @@ class _ScanUUIDPageState extends State<ScanUUIDPage> {
                     height: 300,
                     child: MobileScanner(
                       controller: controller,
-                      onDetect: (capture) {
-                        try {
-                          u.checkUuid(capture.barcodes[0].rawValue);
-                          controller.stop().whenComplete(() {
-                            controller.dispose();
-                          });
-                          Navigator.pop(context);
-                        } catch (e) {
-                          EasyLoading.showError("Serial Number Check Failed.");
-                        }
-                      },
                     ),
                   ),
                   const SizedBox(

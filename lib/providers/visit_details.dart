@@ -8,8 +8,6 @@ class PxVisitDetails extends ChangeNotifier {
   VisitData? _details;
   VisitData? get details => _details;
 
-  final db = PxDatabase();
-
   Future<void> fetchVisitDetailsById(String visitid) async {
     try {
       final result = await PxDatabase.visitData

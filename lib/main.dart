@@ -34,6 +34,8 @@ class MyApp extends StatelessWidget {
               ),
             ),
           ),
+          darkTheme: ThemeData.dark(),
+          themeMode: ThemeMode.dark,
           builder: EasyLoading.init(),
           home: const LoadingScreen(),
           locale: const Locale('en'),

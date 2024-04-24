@@ -1,8 +1,12 @@
+import 'dart:async';
+
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:proclinic_document_scanner/providers/visit_details.dart';
 import 'package:proclinic_document_scanner/routes/visit_details_page/visit_details_page.dart';
+import 'package:proclinic_document_scanner/widgets/snackbar.dart';
 import 'package:provider/provider.dart';
 
 class ScanVisitPage extends StatefulWidget {
@@ -12,25 +16,80 @@ class ScanVisitPage extends StatefulWidget {
   State<ScanVisitPage> createState() => _ScanVisitPageState();
 }
 
-class _ScanVisitPageState extends State<ScanVisitPage> {
-  late final MobileScannerController controller;
+class _ScanVisitPageState extends State<ScanVisitPage>
+    with WidgetsBindingObserver {
+  final MobileScannerController controller = MobileScannerController(
+    detectionSpeed: DetectionSpeed.normal,
+    facing: CameraFacing.back,
+    formats: [BarcodeFormat.qrCode],
+    detectionTimeoutMs: 1000,
+    returnImage: false,
+  );
 
-  @override
-  void initState() {
-    controller = MobileScannerController(
-      detectionSpeed: DetectionSpeed.noDuplicates,
-      facing: CameraFacing.back,
-      formats: [
-        BarcodeFormat.qrCode,
-      ],
-    );
-    super.initState();
+  Barcode? _barcode;
+  StreamSubscription<Object?>? _subscription;
+
+  void _handleBarcode(BarcodeCapture barcodes) async {
+    if (mounted) {
+      _barcode = barcodes.barcodes.firstOrNull;
+      if (_barcode != null) {
+        if (kDebugMode) {
+          print("QR Code Capture Complete.");
+        }
+        ScaffoldMessenger.of(context)
+            .showSnackBar(infoSnackbar("QR Code Capture Complete."));
+        controller.stop();
+        try {
+          if (context.mounted) {
+            await context
+                .read<PxVisitDetails>()
+                .fetchVisitDetailsById(_barcode!.rawValue!);
+          }
+          await EasyLoading.showSuccess("Visit Found.");
+        } catch (e) {
+          await EasyLoading.showError("Visit Not Found.");
+        }
+      }
+    }
   }
 
   @override
-  void dispose() {
-    controller.dispose();
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+
+    _subscription = controller.barcodes.listen(_handleBarcode);
+
+    unawaited(controller.start());
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    super.didChangeAppLifecycleState(state);
+
+    switch (state) {
+      case AppLifecycleState.detached:
+      case AppLifecycleState.hidden:
+      case AppLifecycleState.paused:
+        return;
+      case AppLifecycleState.resumed:
+        _subscription = controller.barcodes.listen(_handleBarcode);
+
+        unawaited(controller.start());
+      case AppLifecycleState.inactive:
+        unawaited(_subscription?.cancel());
+        _subscription = null;
+        unawaited(controller.stop());
+    }
+  }
+
+  @override
+  Future<void> dispose() async {
+    WidgetsBinding.instance.removeObserver(this);
+    unawaited(_subscription?.cancel());
+    _subscription = null;
     super.dispose();
+    controller.dispose();
   }
 
   @override
@@ -55,19 +114,39 @@ class _ScanVisitPageState extends State<ScanVisitPage> {
                       SizedBox(
                         width: 300,
                         height: 300,
-                        child: MobileScanner(
-                          controller: controller,
-                          onDetect: (capture) async {
-                            final bc = capture.barcodes[0].rawValue;
-                            print(bc);
-                            try {
-                              await v.fetchVisitDetailsById(
-                                  capture.barcodes[0].rawValue!);
-                              controller.stop();
-                              EasyLoading.showSuccess("Visit Found.");
-                            } catch (e) {
-                              EasyLoading.showError("Visit Not Found.");
+                        child: ValueListenableBuilder(
+                          valueListenable: controller,
+                          builder: (context, state, _) {
+                            if (!state.isInitialized || !state.isRunning) {
+                              return IconButton(
+                                color: Colors.white,
+                                icon: const Icon(Icons.play_arrow),
+                                iconSize: 32.0,
+                                onPressed: () async {
+                                  await controller.start();
+                                },
+                              );
                             }
+                            return Stack(
+                              children: [
+                                MobileScanner(
+                                  controller: controller,
+                                ),
+                                Align(
+                                  alignment: Alignment.bottomRight,
+                                  child: FloatingActionButton.small(
+                                    heroTag: 'stop-controller',
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(50),
+                                    ),
+                                    child: const Icon(Icons.stop),
+                                    onPressed: () async {
+                                      await controller.stop();
+                                    },
+                                  ),
+                                ),
+                              ],
+                            );
                           },
                         ),
                       ),
@@ -106,7 +185,6 @@ class _ScanVisitPageState extends State<ScanVisitPage> {
                         padding: const EdgeInsets.all(8.0),
                         child: ElevatedButton.icon(
                           onPressed: () {
-                            controller.dispose();
                             Navigator.pop(context);
                           },
                           icon: const Icon(Icons.arrow_back_ios),
