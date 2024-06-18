@@ -16,13 +16,7 @@ class ScanUUIDPage extends StatefulWidget {
 
 class _ScanUUIDPageState extends State<ScanUUIDPage>
     with WidgetsBindingObserver {
-  final MobileScannerController controller = MobileScannerController(
-    detectionSpeed: DetectionSpeed.normal,
-    facing: CameraFacing.back,
-    formats: [BarcodeFormat.qrCode],
-    detectionTimeoutMs: 1000,
-    returnImage: false,
-  );
+  late final MobileScannerController controller;
   Barcode? _barcode;
   StreamSubscription<Object?>? _subscription;
 
@@ -46,8 +40,16 @@ class _ScanUUIDPageState extends State<ScanUUIDPage>
 
   @override
   void initState() {
-    super.initState();
     WidgetsBinding.instance.addObserver(this);
+    super.initState();
+
+    controller = MobileScannerController(
+      detectionSpeed: DetectionSpeed.normal,
+      facing: CameraFacing.back,
+      formats: [BarcodeFormat.qrCode],
+      detectionTimeoutMs: 1000,
+      returnImage: false,
+    );
 
     _subscription = controller.barcodes.listen(_handleBarcode);
 
@@ -79,8 +81,8 @@ class _ScanUUIDPageState extends State<ScanUUIDPage>
     WidgetsBinding.instance.removeObserver(this);
     unawaited(_subscription?.cancel());
     _subscription = null;
-    super.dispose();
     controller.dispose();
+    super.dispose();
   }
 
   @override

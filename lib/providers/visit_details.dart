@@ -23,17 +23,4 @@ class PxVisitDetails extends ChangeNotifier {
     _details = null;
     notifyListeners();
   }
-
-  // Future<String> addFileToGrid(Stream<List<int>> input) async {
-  //   final result = PxDatabase.gridFS.createFile(input, "test.pdf");
-  //   final file = await result.save();
-  //   return file.toString();
-  // }
-
-  // Future<void> updateVisitDetails({
-  //   required String attribute,
-  //   required String value,
-  // }) async {
-  //   final result;
-  // }
 }
