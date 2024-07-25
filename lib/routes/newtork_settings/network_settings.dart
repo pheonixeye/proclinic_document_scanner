@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:proclinic_document_scanner/providers/network_settings.dart';
+import 'package:proclinic_document_scanner/routes/login_page/login_page.dart';
 import 'package:provider/provider.dart';
 
 class NetworkSettingsPage extends StatefulWidget {
@@ -93,8 +94,14 @@ class _NetworkSettingsPageState extends State<NetworkSettingsPage> {
                           );
                     }
                     await EasyLoading.dismiss();
-
-                    context.mounted ? Navigator.pop(context) : () {};
+                    if (context.mounted) {
+                      Navigator.pushReplacement(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const LoginPage(),
+                        ),
+                      );
+                    }
                   }
                 },
               ),

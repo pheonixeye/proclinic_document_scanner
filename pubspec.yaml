@@ -45,8 +45,8 @@ dependencies:
   hive:
   hive_flutter:
   permission_handler: 
-  pretty_qr_code: 
-  mobile_scanner: 5.0.1
+  # pretty_qr_code: 
+  # mobile_scanner: 5.0.1
   intl:
   image_picker: ^1.0.7
   flutter_easyloading:

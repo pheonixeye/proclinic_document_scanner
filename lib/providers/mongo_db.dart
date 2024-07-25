@@ -16,6 +16,8 @@ class PxDatabase extends ChangeNotifier {
       'mongodb://${settings.storage.get('ip')}:${settings.storage.get('port')}/proclinic');
 
   static final DbCollection visitData = mongo.collection('visitdata');
+  static final DbCollection visits = mongo.collection('visits');
+  static final DbCollection doctors = mongo.collection('doctors');
   static final GridFS gridFS = GridFS(mongo);
 
   Future<void> openYaMongo() async {

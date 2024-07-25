@@ -1,7 +1,12 @@
-import 'dart:async' show Timer;
+import 'dart:async' show FutureOr, Timer;
+import 'dart:async' show Timer, FutureOr;
 
+import 'package:after_layout/after_layout.dart';
 import 'package:flutter/material.dart';
-import 'package:proclinic_document_scanner/routes/homepage/homepage.dart';
+import 'package:proclinic_document_scanner/providers/mongo_db.dart';
+import 'package:proclinic_document_scanner/routes/login_page/login_page.dart';
+import 'package:proclinic_document_scanner/routes/newtork_settings/network_settings.dart';
+import 'package:provider/provider.dart';
 
 class LoadingScreen extends StatefulWidget {
   const LoadingScreen({super.key});
@@ -10,25 +15,37 @@ class LoadingScreen extends StatefulWidget {
   State<LoadingScreen> createState() => _LoadingScreenState();
 }
 
-class _LoadingScreenState extends State<LoadingScreen> {
-  late final Timer timer;
-
+class _LoadingScreenState extends State<LoadingScreen> with AfterLayoutMixin {
+  Timer? timer;
   @override
-  void initState() {
-    super.initState();
-    timer = Timer(const Duration(seconds: 3), () {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(
-          builder: (context) => const MyHomePage(),
-        ),
-      );
-    });
+  FutureOr<void> afterFirstLayout(BuildContext context) async {
+    try {
+      await context.read<PxDatabase>().openYaMongo();
+      timer = Timer(const Duration(seconds: 3), () {
+        if (context.mounted) {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(
+              builder: (context) => const LoginPage(),
+            ),
+          );
+        }
+      });
+    } catch (e) {
+      if (context.mounted) {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (context) => const NetworkSettingsPage(),
+          ),
+        );
+      }
+    }
   }
 
   @override
   void dispose() {
-    timer.cancel();
+    timer?.cancel();
     super.dispose();
   }
 
