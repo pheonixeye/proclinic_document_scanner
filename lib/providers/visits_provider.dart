@@ -94,13 +94,15 @@ class PxVisits extends ChangeNotifier {
 
       case QueryType.Search:
         final result = await PxDatabase.visits
-            .find(where.eq(SxVisit.DOCID, docid).and(where
-                .match(SxVisit.PTNAME, query ?? '')
-                .or(where.match(SxVisit.PHONE, query ?? ''))
+            .find(where
+                .eq(SxVisit.DOCID, docid)
+                .and(where
+                    .match(SxVisit.PTNAME, query ?? '')
+                    .or(where.match(SxVisit.PHONE, query ?? '')))
                 .sortBy(
                   SxVisit.VISITDATE,
-                  descending: false,
-                )))
+                  descending: true,
+                ))
             .toList();
         _visits = Visit.visitList(result);
         notifyListeners();

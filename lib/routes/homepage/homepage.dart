@@ -27,7 +27,7 @@ class _HomepageState extends State<Homepage>
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("ProClinic Scanner"),
+        title: const Text("ProClinic Document Scanner"),
         bottom: TabBar(
           controller: _tabController,
           tabs: [
